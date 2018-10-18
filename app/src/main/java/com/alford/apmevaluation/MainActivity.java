@@ -8,6 +8,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.networkbench.agent.impl.NBSAppAgent;
+
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -23,6 +25,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        NBSAppAgent.setLicenseKey("bbf6d85620c44a779feceed374da2855")
+                .withLocationServiceEnabled(true)
+                .start(this.getApplicationContext());//Appkey 请从官网获取
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         findViewById(R.id.btn_http_get).setOnClickListener(this);
