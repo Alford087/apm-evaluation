@@ -8,6 +8,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.newrelic.agent.android.NewRelic;
+
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -23,6 +25,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        NewRelic.withApplicationToken(
+                "AA4466744f6e7e7ea7f7cdcae820fe507c876dceab"
+        ).start(this.getApplication());
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         findViewById(R.id.btn_http_get).setOnClickListener(this);
