@@ -3,6 +3,15 @@
     package="com.alford.apmevaluation">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!--发送性能数据到服务器需要该权限-->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!--发送性能数据到服务器需要该权限-->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!--sdk读取设备识别码需要该权限-->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    若想使用 Crash 快照功能，请引入以下授权信息
+    <uses-permission android:name="android.permission.GET_TASKS" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
