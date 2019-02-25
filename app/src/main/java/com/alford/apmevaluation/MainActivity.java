@@ -8,6 +8,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.tencent.bugly.crashreport.CrashReport;
+
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -24,6 +26,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CrashReport.initCrashReport(getApplicationContext(), "2c6f741bb7", false);
         setContentView(R.layout.activity_main);
         findViewById(R.id.btn_http_get).setOnClickListener(this);
         findViewById(R.id.btn_anr).setOnClickListener(this);
