@@ -1,22 +1,17 @@
 package com.alford.apmevaluation;
 
+import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.os.Bundle;
-import android.app.Activity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 
-import com.networkbench.agent.impl.NBSAppAgent;
+import com.google.firebase.perf.FirebasePerformance;
+import com.google.firebase.perf.metrics.HttpMetric;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -25,9 +20,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        NBSAppAgent.setLicenseKey("bbf6d85620c44a779feceed374da2855")
-                .withLocationServiceEnabled(true)
-                .start(this.getApplicationContext());//Appkey 请从官网获取
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         findViewById(R.id.btn_http_get).setOnClickListener(this);
@@ -50,26 +42,55 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    HttpMetric metric;
 
     public void httpGet() {
-        OkHttpClient client = new OkHttpClient();
-        //构造Request对象
-        //采用建造者模式，链式调用指明进行Get请求,传入Get的请求地址
-        Request request = new Request.Builder().get().url("https://www.baidu.com").build();
-        Call call = client.newCall(request);
-        //异步调用并设置回调函数
-        call.enqueue(new Callback() {
+        final String uri = "https://www.baidu.com";
+//        OkHttpClient client = new OkHttpClient();
+//        //构造Request对象
+//        //采用建造者模式，链式调用指明进行Get请求,传入Get的请求地址
+//        Request request = new Request.Builder().get().url(url).build();
+//        Call call = client.newCall(request);
+//        //异步调用并设置回调函数
+//        metric.start();
+//        call.enqueue(new Callback() {
+//            @Override
+//            public void onFailure(Call call, IOException e) {
+//                Log.e(TAG, e.getMessage());
+//            }
+//
+//            @Override
+//            public void onResponse(Call call, final Response response) throws IOException {
+//                final String responseStr = response.body().string();
+//                Log.e(TAG, responseStr);
+//            }
+//        });
+        new Thread(new Runnable() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                Log.e(TAG, e.getMessage());
-            }
+            public void run() {
+                HttpMetric metric =
+                        FirebasePerformance.getInstance().newHttpMetric(uri,
+                                FirebasePerformance.HttpMethod.GET);
+                try {
+                    final URL url = new URL(uri);
+                    metric.start();
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setDoOutput(true);
+                    conn.setRequestProperty("Content-Type", "application/json");
+                    byte[] data = new byte[0];
+                    DataOutputStream outputStream = new DataOutputStream(conn.getOutputStream());
+                    outputStream.write(data);
+                    metric.setRequestPayloadSize(data.length);
+                    metric.setHttpResponseCode(conn.getResponseCode());
+                    conn.disconnect();
+                    metric.stop();
+                } catch (IOException ignored) {
+                }
 
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                final String responseStr = response.body().string();
-                Log.e(TAG, responseStr);
             }
-        });
+        }).start();
+
+
     }
 
     private void makeAnr() {
@@ -79,6 +100,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             e.printStackTrace();
         }
     }
+
+    LimitQueue<String> limitQueue = new LimitQueue<>(5);
 
     private void makeCrash() {
         int i = 1 / 0;
