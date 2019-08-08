@@ -1,13 +1,19 @@
 package com.alford.apmevaluation;
 
-import android.os.Bundle;
 import android.app.Activity;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
 import com.networkbench.agent.impl.NBSAppAgent;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -17,6 +23,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class MainActivity extends Activity implements View.OnClickListener {
+
 
     private static final String TAG = "MainActivity";
 
@@ -42,7 +49,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 makeAnr();
                 break;
             case R.id.btn_crash:
-                makeCrash();
+//                makeCrash();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        httpURLConnection();
+                    }
+                });
                 break;
         }
     }
@@ -94,5 +107,41 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private void makeCrash() {
         int i = 1 / 0;
+    }
+
+
+    private void httpURLConnection() {
+        try {
+            URL url = new URL("http://www.baidu.com");
+            HttpURLConnection coon = (HttpURLConnection) url.openConnection();
+            coon.setRequestMethod("GET");
+            coon.setReadTimeout(6000);
+            //获取响应码
+            if (coon.getResponseCode() == 200) {
+                //获取输入流
+                InputStream in = coon.getInputStream();
+                byte[] b = new byte[1024 * 512];
+                int len = 0;
+                //建立缓存流，保存所读取的字节数组
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                while ((len = in.read(b)) > -1) {
+                    baos.write(b, 0, len);
+                }
+                String msg = baos.toString();
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    MyDatabaseHelper dbHelper = new MyDatabaseHelper(this, "BookStore.db", null, 1); // 执行这句并不会创建数据库文件;
+
+
+    private void testDatabase() {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        dbHelper.getReadableDatabase();
+        db.insert("", "", null);
     }
 }
