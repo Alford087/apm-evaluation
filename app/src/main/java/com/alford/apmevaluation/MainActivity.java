@@ -11,6 +11,7 @@ import java.io.IOException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -47,25 +48,40 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
 
-    public void httpGet() {
-        OkHttpClient client = new OkHttpClient();
-        //构造Request对象
-        //采用建造者模式，链式调用指明进行Get请求,传入Get的请求地址
-        Request request = new Request.Builder().get().url("https://www.baidu.com").build();
-        Call call = client.newCall(request);
-        //异步调用并设置回调函数
+    private void httpGet() {
+        String url = "http://www.publicobject.com/helloworld.txt";
+//        String url = "http://www.baidu.com";
+        OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
+                .addInterceptor(new Interceptor() {
+                    @Override
+                    public Response intercept(Chain chain) throws IOException {
+                        Request request = chain.request();
+                        Response response = chain.proceed(request);
+                        return response;
+                    }
+                })
+
+                .build();//新建一个okhttpClient对象，并且设置拦截器
+
+        final Request request = new Request.Builder()
+                .url(url)
+//                .addHeader(LoggingInterceptor.COMMON_HEADER,String.valueOf(System.currentTimeMillis()))
+                .get()//默认就是GET请求，可以不写
+                .build();
+        Call call = okHttpClient.newCall(request);
         call.enqueue(new Callback() {
+
             @Override
             public void onFailure(Call call, IOException e) {
-                Log.e(TAG, e.getMessage());
+                Log.d(TAG, "onFailure: ");
             }
 
             @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                final String responseStr = response.body().string();
-                Log.e(TAG, responseStr);
+            public void onResponse(Call call, Response response) throws IOException {
+                Log.d(TAG, "onResponse: " + response.body().string());
             }
         });
+
     }
 
     private void makeAnr() {
